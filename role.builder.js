@@ -16,7 +16,7 @@ function checkForDroppedEnergy(creep){
     creep.memory.found = false
     var break_point = 100
     if(creep.carry.energy < creep.carryCapacity-break_point){
-        var dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES,4)
+        var dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES,50)
 
         if(dropped_energy[0] && dropped_energy[0].energy >= break_point) {
             //console.log("Dropped Energy: " + dropped_energy[0].energy)

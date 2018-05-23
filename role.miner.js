@@ -28,12 +28,6 @@ function noEnemys(creep){
     } else return true
 }
 
-function createContainer(creep){
-    
-    
-    
-}
-
 var roleMiner = {
     /** @param {Creep} creep **/
     run: function(creep) {

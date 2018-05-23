@@ -7,42 +7,25 @@
  * mod.thing == 'a thing'; // true
  */
 require('tools');
-var controllerContainer = '5af6fde89249541374528d4b'
-var controllerContainer2 = '5af6e9df7ab95e2cfc0e490f'
-var controllerContainer3 = '5afa293773003b27aff2b5a7'
 
 function refuel_at_container(creep){
-    var controllerContainer = Game.getObjectById('5af6fde89249541374528d4b');
 
     var energy_needed = creep.energyCapacity - creep.energy
 
-    if(controllerContainer.room.name === creep.room.name) {
-        if (creep.withdraw(controllerContainer, RESOURCE_ENERGY, energy_needed) === ERR_NOT_IN_RANGE) {
-            creep.moveTo(controllerContainer, {visualizePathStyle: {stroke: '#ffaa00'}});
-        }
-    }else{
         var container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {return (structure.structureType === STRUCTURE_CONTAINER && structure.store.energy >= 100 )}});
         //console.log(container)
         if (creep.withdraw(container, RESOURCE_ENERGY, energy_needed) === ERR_NOT_IN_RANGE) {
             creep.moveTo(container, {visualizePathStyle: {stroke: '#ffaa00'}});
-        }
-        //if(container.hits < container.hitsMax-1000) creep.repair(container)
-    }
+        }//else repairContainer(creep, container)
 }
 
-function refuel_somewhere(creep){
-    var container = creep.pos.findClosestByPath(FIND_MY_STRUCTURES,{
+function repairContainer(creep) {
+    var container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (structure) => {
-            return ((structure.structureType === STRUCTURE_CONTAINER))}});
-
-}
-
-function refuel_at_spawn(creep){
-    spawn = Game.spawns['Home']
-    
-    if(creep.withdraw(spawn, RESOURCE_ENERGY, energy_needed ) === ERR_NOT_IN_RANGE) {
-        creep.moveTo(spawn, {visualizePathStyle: {stroke: '#ffaa00'}});
+            return (structure.structureType === STRUCTURE_CONTAINER && structure.hits < structure.hitsMax - 1000)}});
+    if (creep.repair(container) === ERR_NOT_IN_RANGE) {
+        creep.moveTo(container, {visualizePathStyle: {stroke: '#ffaa00'}});
     }
 }
 
@@ -74,6 +57,7 @@ function noEnemys(creep){
         return false
     } else return true
 }
+
 function checkForDroppedEnergy(creep){
     creep.memory.found = false
     var break_point = 100
@@ -117,6 +101,7 @@ var roleUpgrader = {
                 if (creep.memory.upgrading && storage[0].store[RESOURCE_ENERGY] >= 50000) { //Game.spawns['Home'].memory.maxStorage) {
                     // signController(creep)
                     //console.log(creep.claimController(creep.room.controller))
+                    repairContainer(creep)
                     if (creep.upgradeController(creep.room.controller) === ERR_NOT_IN_RANGE) {
                         creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffffff'}});
                     }else
