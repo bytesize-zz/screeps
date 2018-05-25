@@ -58,6 +58,17 @@ function noEnemys(creep){
     } else return true
 }
 
+function callForHelp(creep){
+    enemys = creep.room.find(FIND_HOSTILE_CREEPS)
+    home_room = Game.rooms[creep.memory.home_room]
+
+    //console.log(home_room)
+
+    if(enemys.length > 0) {
+        home_room.memory.alert = enemys.length
+    } else delete home_room.memory.alert
+}
+
 function checkForDroppedEnergy(creep){
     creep.memory.found = false
     var break_point = 100
@@ -81,6 +92,7 @@ var roleUpgrader = {
         if(!creep.memory.target_room) creep.memory.target_room = creep.memory.work_room;
         else
         if(inTargetRoom(creep)){
+            callForHelp(creep)
             if(!checkForDroppedEnergy(creep)){}
             var storage = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
@@ -98,14 +110,14 @@ var roleUpgrader = {
                     creep.say('⚡ upgrade');
                 }
 
-                if (creep.memory.upgrading && storage[0].store[RESOURCE_ENERGY] >= 50000) { //Game.spawns['Home'].memory.maxStorage) {
-                    // signController(creep)
+                if (creep.memory.upgrading) { //Game.spawns['Home'].memory.maxStorage) {
+                    //signController(creep)
                     //console.log(creep.claimController(creep.room.controller))
                     repairContainer(creep)
                     if (creep.upgradeController(creep.room.controller) === ERR_NOT_IN_RANGE) {
                         creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffffff'}});
                     }else
-                        if((creep.claimController(creep.room.controller) === ERR_NOT_IN_RANGE) || (creep.reserveController(creep.room.controller) === ERR_NOT_IN_RANGE)) {
+                        if(/*(creep.claimController(creep.room.controller) === ERR_NOT_IN_RANGE) || */(creep.reserveController(creep.room.controller) === ERR_NOT_IN_RANGE)) {
                             creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffffff'}});
                     }
                 }

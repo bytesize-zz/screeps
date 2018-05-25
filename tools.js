@@ -26,7 +26,7 @@ module.exports.checkForDroppedEnergy2 = function(creep){
 
 module.exports.atPostition = function(creep, target){
     if(!(creep.pos.isNearTo(target))){
-        creep.moveTo(target, {visualizePathStyle: {stroke: '#0811ff'}});
+        creep.moveTo(target, {visualizePathStyle: {stroke: '#3bff09'}});
         return false
     }else return true
 };
@@ -37,6 +37,29 @@ module.exports.inTargetRoom = function(creep){
         return false
     }else return true
 };
+
+module.exports.noEnemys = function(creep){
+    enemys = creep.room.find(FIND_HOSTILE_CREEPS);
+
+    return(enemys.length > 0)
+};
+
+module.exports.identifyControllerContainer = function(room_name){
+    room = Game.rooms[room_name]
+    if(room) {
+        controller = room.controller
+        if (controller) {
+            //console.log(controller)
+            controllerContainer = controller.pos.findInRange(FIND_STRUCTURES, 2, {
+                filter: (structure) => {
+                    return structure.structureType === STRUCTURE_CONTAINER
+                }
+            })
+            //console.log(controllerContainer[0].id)
+            room.memory.controllerContainer = controllerContainer[0].id
+        }
+    }
+}
 
 module.exports.test = function(){
     console.log("Test")

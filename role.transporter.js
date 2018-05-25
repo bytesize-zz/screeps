@@ -9,8 +9,9 @@
 require('tools') 
 
 var controllerContainer = '5af6fde89249541374528d4b'
-var controllerContainer2 = '5af6e9df7ab95e2cfc0e490f'
+var controllerContainer2 = '5b08367ae3404b2a03c40482'
 var controllerContainer3 = '5afa293773003b27aff2b5a7'
+var controllerContainer4 = '5b082e00e25bad30d23acf74'
 
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min; 
@@ -25,7 +26,8 @@ function get_random_source(creep){
                     && (structure.store[RESOURCE_ENERGY] >= creep.carryCapacity/2)
                     && (structure.id !== controllerContainer)  // don't refill at controllerContainer
                     && (structure.id !== controllerContainer2)
-                    && (structure.id !== controllerContainer3))
+                    && (structure.id !== controllerContainer3)
+                    && (structure.id !== controllerContainer4))
             }});
 
         i = getRndInteger(0, container.length)
@@ -54,7 +56,8 @@ function get_refuel_target(creep){
         var closestTarget = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
                 return ((structure.structureType === STRUCTURE_EXTENSION || structure.structureType === STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity) ||
-                        (structure.structureType === STRUCTURE_CONTAINER && (structure.id === controllerContainer || structure.id === controllerContainer2|| structure.id === controllerContainer3) &&
+                        (structure.structureType === STRUCTURE_CONTAINER && (structure.id === controllerContainer || structure.id === controllerContainer2 ||
+                            structure.id === controllerContainer3 || structure.id === controllerContainer4) &&
                             structure.store[RESOURCE_ENERGY] < structure.storeCapacity * controllerPercent) ||
                         (structure.structureType === STRUCTURE_TOWER && structure.energy < structure.energyCapacity * towerPercent);}});
 
@@ -132,12 +135,13 @@ function getRefuelTarget(creep){
         var closestTarget = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: (structure) => {
                 return ((structure.structureType === STRUCTURE_EXTENSION || structure.structureType === STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity) ||
-                    (structure.structureType === STRUCTURE_CONTAINER && (structure.id === controllerContainer || structure.id === controllerContainer2 || structure.id === controllerContainer3) &&
+                    (structure.structureType === STRUCTURE_CONTAINER && (structure.id === controllerContainer ||
+                        structure.id === controllerContainer2 || structure.id === controllerContainer3 || structure.id === controllerContainer4) &&
                         structure.store[RESOURCE_ENERGY] < structure.storeCapacity * controllerPercent) ||
                     (structure.structureType === STRUCTURE_TOWER && structure.energy < structure.energyCapacity * towerPercent);
             }
         });
-
+        //creep.say(closestTarget.room)
         if (closestTarget) {
             if ((closestTarget.structureType === STRUCTURE_CONTAINER) && creep.room.energyAvailable < creep.room.energyCapacityAvailable) {
 
@@ -182,7 +186,8 @@ function getRefuelSource(creep){
                     && (structure.store[RESOURCE_ENERGY] > creep.carryCapacity/2)
                     && (structure.id !== controllerContainer)  // don't refill at controllerContainer
                     && (structure.id !== controllerContainer2)
-                    && (structure.id !== controllerContainer3))
+                    && (structure.id !== controllerContainer3)
+                    && (structure.id !== controllerContainer4))
             }});
 
         //console.log(source)
@@ -216,7 +221,7 @@ function decideNextMove(creep){
 
     //console.log("nextMove: "+creep.memory.next_move+" Source: "+refuelSource +" Target: "+refuelTarget +" Dropped: "+droppedResource )
 
-    if(droppedResource  && creepFreeSpace > 0){
+    if(droppedResource && creepFreeSpace > 0 && creep.memory.work_room === creep.room.name){
         droppedResourceRange = creep.pos.getRangeTo(droppedResource)
         //console.log(droppedResource)
         droppedValue = sigmoid(droppedResource.amount/creepFreeSpace)*(creepFreeSpace/creepCarryCapacity) * droppedModifier/droppedResourceRange
@@ -228,6 +233,8 @@ function decideNextMove(creep){
             creep.memory.next_move = "looting"
             creep.memory.next_move_value = droppedValue
         }
+    }else {
+        delete creep.memory.dropped_resource
     }
 
     if(refuelTarget){
@@ -247,7 +254,7 @@ function decideNextMove(creep){
         }
     }
 
-    if(refuelSource && creepFreeSpace > 0){
+    if(refuelSource && creepFreeSpace > 0 && creep.memory.work_room === creep.room.name){
         refuelSourceRange = creep.pos.getRangeTo(refuelSource)
         //console.log(refuelSource)
         sourceValue = sigmoid(refuelSource.store[RESOURCE_ENERGY]/creepFreeSpace)*(creepFreeSpace/creepCarryCapacity)/refuelSourceRange
@@ -260,6 +267,8 @@ function decideNextMove(creep){
             creep.memory.next_move = "source"
             creep.memory.next_move_value = sourceValue
         }
+    }else {
+        delete creep.memory.refuel_source
     }
 
     if(_.sum(creep.carry) - creep.carry[RESOURCE_ENERGY] > creep.carryCapacity/4){}
@@ -286,6 +295,7 @@ function atPosition(creep, target){
 
 function inTargetRoom(creep){
     if(creep.room.name !== creep.memory.target_room) {
+        creep.say("RoomSwitch")
         creep.moveTo(Game.flags[creep.memory.target_room], {visualizePathStyle: {stroke: '#0811ff'}});
         return false
     }else return true
@@ -297,6 +307,23 @@ function noEnemys(creep){
     if(enemys.length > 0) {
         return false
     } else return true
+}
+
+function checkForRoomChange(creep) {
+    target = Game.getObjectById(creep.memory.refuel_target)
+
+    if(_.sum(creep.carry) >= creep.carryCapacity && creep.memory.home_room !== creep.memory.work_room) {
+
+        if(!target) {
+            delete creep.memory.refuel_target
+            creep.memory.target_room = creep.memory.home_room
+        }
+    }
+    if(_.sum(creep.carry) <= 0 && creep.memory.home_room !== creep.memory.work_room){
+
+        creep.memory.target_room = creep.memory.work_room
+    }
+
 }
 
 var roleTransporter = {
@@ -345,23 +372,29 @@ var roleTransporter = {
 
 	}*/
     run: function(creep) {
-        getDroppedResources(creep)
-        getRefuelSource(creep)
-        //get_refuel_target(creep)
-        getRefuelTarget(creep)
-        decideNextMove(creep)
 
-        if(!creep.memory.target_room) creep.memory.target_room = creep.memory.work_room;
-        else if (!creep.memory.resource) resource = 0;
-            else resource = creep.memory.resource;
+        if (!creep.memory.target_room) creep.memory.target_room = creep.memory.work_room;
+        if (!creep.memory.resource) resource = 0;
+        else resource = creep.memory.resource;
 
-        if(creep.memory.next_move === "looting"){
-            droppedResource = Game.getObjectById(creep.memory.dropped_resource)
-            if(!droppedResource || creep.carry === creep.carryCapacity){
-                delete creep.memory.dropped_resource
-                delete creep.memory.next_move
-                delete creep.memory.next_move_value
-            }else if (atPosition(creep, droppedResource)){
+        if(inTargetRoom(creep)) {
+            //console.log("test")
+            getDroppedResources(creep)
+            getRefuelSource(creep)
+            //get_refuel_target(creep)
+
+            getRefuelTarget(creep)
+            decideNextMove(creep)
+            checkForRoomChange(creep)
+
+
+            if (creep.memory.next_move === "looting") {
+                droppedResource = Game.getObjectById(creep.memory.dropped_resource)
+                if (!droppedResource || creep.carry === creep.carryCapacity) {
+                    delete creep.memory.dropped_resource
+                    delete creep.memory.next_move
+                    delete creep.memory.next_move_value
+                } else if (atPosition(creep, droppedResource)) {
                     creep.pickup(droppedResource)
                     delete creep.memory.dropped_resource
                     delete creep.memory.refuel_target
@@ -369,14 +402,14 @@ var roleTransporter = {
                     delete creep.memory.next_move
                     delete creep.memory.next_move_value
                 }
-        }
-        if(creep.memory.next_move === "source"){
-            refuelSource = Game.getObjectById(creep.memory.refuel_source)
-            if(creep.carry === creep.carryCapacity){
-                delete creep.memory.refuel_source
-                delete creep.memory.next_move
-                delete creep.memory.next_move_value
-            }else if(atPosition(creep, refuelSource)){
+            }
+            if (creep.memory.next_move === "source") {
+                refuelSource = Game.getObjectById(creep.memory.refuel_source)
+                if (creep.carry === creep.carryCapacity) {
+                    delete creep.memory.refuel_source
+                    delete creep.memory.next_move
+                    delete creep.memory.next_move_value
+                } else if (atPosition(creep, refuelSource)) {
                     energy_needed = creep.carryCapacity - creep.carry
                     creep.withdraw(refuelSource, RESOURCE_ENERGY, energy_needed)
                     delete creep.memory.dropped_resource
@@ -385,16 +418,15 @@ var roleTransporter = {
                     delete creep.memory.next_move
                     delete creep.memory.next_move_value
                 }
-        }
-        if(creep.memory.next_move === "target"){
-            refuelTarget = Game.getObjectById(creep.memory.refuel_target)
-            if(creep.carry === 0){
-                delete creep.memory.refuel_target
-                delete creep.memory.next_move
-                delete creep.memory.next_move_value
-            }else
-                if(atPosition(creep, refuelTarget)){
-                    if(refuelTarget.structureType === STRUCTURE_STORAGE) creep.transfer(refuelTarget, RESOURCE_ENERGY );
+            }
+            if (creep.memory.next_move === "target") {
+                refuelTarget = Game.getObjectById(creep.memory.refuel_target)
+                if (creep.carry === 0) {
+                    delete creep.memory.refuel_target
+                    delete creep.memory.next_move
+                    delete creep.memory.next_move_value
+                } else if (atPosition(creep, refuelTarget)) {
+                    if (refuelTarget.structureType === STRUCTURE_STORAGE) creep.transfer(refuelTarget, RESOURCE_ENERGY);
                     else creep.transfer(refuelTarget, RESOURCE_ENERGY)
                     delete creep.memory.dropped_resource
                     delete creep.memory.refuel_target
@@ -402,6 +434,7 @@ var roleTransporter = {
                     delete creep.memory.next_move
                     delete creep.memory.next_move_value
                 }
+            }
         }
     }
 };

@@ -12,6 +12,8 @@ var controllerContainer = '5af6fde89249541374528d4b'
 var controllerContainer2 = '5af6e9df7ab95e2cfc0e490f'
 var controllerContainer3 = '5afa293773003b27aff2b5a7'
 
+
+
 function checkForDroppedEnergy(creep){
     creep.memory.found = false
     var break_point = 100
@@ -49,11 +51,6 @@ function getRepairTarget(creep){
         if((target) && (target.hits >= target.hitsMax)) delete creep.memory.repair_target
     }
     return creep.memory.repair_target
-}
-
-function dyingStructures(creep){
-    
-    
 }
 
 function inTargetRoom(creep){

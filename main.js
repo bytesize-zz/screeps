@@ -30,7 +30,11 @@ module.exports.loop = function () {
     //console.log("Repair modifier i: " + Game.spawns['Home'].memory.hp * 100)
 
     spawn_controll();
-    //tools.test()
+
+
+    tools.identifyControllerContainer('E42S26')
+
+
     maximum_capacity = Game.rooms['E41S26'].energyCapacityAvailable
     //console.log(maximum_capacity)
 
@@ -125,10 +129,9 @@ module.exports.loop = function () {
         var fighters = _.filter(Game.creeps, (creep) => creep.memory.role === 'fighter');
         var healer= _.filter(Game.creeps, (creep) => creep.memory.role === 'healer');
 
-        console.log("Miner: " + miners.length + "/" + maximumMiner + " | Transporter: " + transporters.length + "/" + maximumTransporter
-            + " | Builder: " + builders.length + "/" + maximumBuilder + " | Upgrader: " + upgraders.length + "/" + maximumUpgrader
-            + " | Explorer: " + explorers.length + "/" + maxExplorer
-            + " | Fighter: " + fighters.length)
+        console.log("Miner: " + miners.length  + " | Transporter: " + transporters.length
+            + " | Builder: " + builders.length  + " | Upgrader: " + upgraders.length
+            + " | Explorer: " + explorers.length + " | Fighter: " + fighters.length)
 
         //if (builders.length < 1) Builder(1500, 'E42S26')
         //if(fighters.length < 4 ) buildFighter(mySpawns[0])
@@ -212,8 +215,8 @@ module.exports.loop = function () {
                     slaveMiner = _.filter(Game.creeps, (c) => (c.memory.role === "miner" && c.memory.work_room === room.memory.slave_rooms[0]))
                     //console.log(slaveMiner.length)
                     if (slaveMiner.length < 1 || (slaveMiner.length === 1 && slaveMiner[0].ticksToLive < 100)) {
-                        //Miner(spawn, energy, 0, room.memory.slave_rooms[0])
-                        console.log(slaveMiner)
+                        Miner(spawn, energy, 0, room.memory.slave_rooms[0])
+                        //console.log(slaveMiner)
                     }
                 }
             }
@@ -238,7 +241,7 @@ module.exports.loop = function () {
                 if(room.memory.slave_rooms && transporter.length >= 2){
                     slaveTransporter = _.filter(Game.creeps, (c) => (c.memory.role === "transporter" && c.memory.work_room === room.memory.slave_rooms[0]))
                     if (slaveTransporter.length < 2 || (slaveTransporter.length === 2 && slaveTransporter[0].ticksToLive < 100)) {
-                        //Transporter(spawn, energy, room.memory.slave_rooms[0})
+                        Transporter(spawn, energy, room.memory.slave_rooms[0])
                     }
                 }
             }
@@ -263,6 +266,9 @@ module.exports.loop = function () {
                 if(room.memory.slave_rooms){
                     slaveBuilder = _.filter(Game.creeps, (c) => (c.memory.role === "builder" && c.memory.work_room === room.memory.slave_rooms[0]))
                     if (slaveBuilder.length < 1 || (slaveBuilder.length === 1 && slaveBuilder[0].ticksToLive < 100)) {
+                        slaveRoom = Game.rooms[room.memory.slave_rooms[0]]
+
+                        if(slaveRoom && slaveRoom.find(FIND_CONSTRUCTION_SITES).length > 0)
                         Builder(spawn, energy, room.memory.slave_rooms[0])
                     }
                 }
@@ -286,13 +292,12 @@ module.exports.loop = function () {
                     } else {
                         Upgrader(spawn, energy, room.name)
                         }
-                    if(room.memory.slave_rooms){
-                        slaveClaimer = _.filter(Game.creeps, (c) => (c.memory.role === "upgrader" && c.memory.work_room === room.memory.slave_rooms[0]))
-                        if (slaveClaimer.length < 1 || (slaveClaimer.length === 1 && slaveClaimer[0].ticksToLive < 100)) {
-                            //Claimer(spawn, energy, room.memory.slave_rooms[0])
-                        }
+                } else
+                if(room.memory.slave_rooms){
+                    slaveClaimer = _.filter(Game.creeps, (c) => (c.memory.role === "upgrader" && c.memory.work_room === room.memory.slave_rooms[0]))
+                    if (slaveClaimer.length < 1 || (slaveClaimer.length === 1 && slaveClaimer[0].ticksToLive < 100)) {
+                        Claimer(spawn, energy, room.memory.slave_rooms[0])
                     }
-
                 }
             }
         }
@@ -358,7 +363,7 @@ module.exports.loop = function () {
         }
 
         function Claimer(spawn, energy, work_room) {
-            var modules = [MOVE, MOVE, CARRY, CARRY, CLAIM, CLAIM]
+            var modules = [MOVE, MOVE, CARRY, CARRY, CLAIM]
             var newName = modules.length + '-size Claimer' + Game.time;
             home_room = Game.spawns[spawn].room.name
             console.log('Spawning new claimer: ' + newName);
