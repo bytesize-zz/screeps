@@ -6,7 +6,7 @@
  * var mod = require('role.upgrader');
  * mod.thing == 'a thing'; // true
  */
-require('tools');
+const tools = require('tools');
 
 function refuel_at_container(creep){
 
@@ -89,6 +89,7 @@ function checkForDroppedEnergy(creep){
 var roleUpgrader = {
     /** @param {Creep} creep **/
     run: function (creep) {
+        tools.setAlarm(creep)
         if(!creep.memory.target_room) creep.memory.target_room = creep.memory.work_room;
         else
         if(inTargetRoom(creep)){

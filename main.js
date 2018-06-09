@@ -46,10 +46,10 @@ module.exports.loop = function () {
 
     if (!Game.spawns['Home'].memory.maxStorage) Game.spawns['Home'].memory.maxStorage = 1
     else {
-        if (storage[0] && storage[0].store[RESOURCE_ENERGY] > Game.spawns['Home'].memory.maxStorage)
-            Game.spawns['Home'].memory.maxStorage = storage[0].store[RESOURCE_ENERGY]
+        //if (storage[0] && storage[0].store[RESOURCE_ENERGY] > Game.spawns['Home'].memory.maxStorage)
+            //Game.spawns['Home'].memory.maxStorage = storage[0].store[RESOURCE_ENERGY]
 
-        console.log("Storage: " + storage[0].store[RESOURCE_ENERGY] + "/" + Game.spawns['Home'].memory.maxStorage)
+        //console.log("Storage: " + storage[0].store[RESOURCE_ENERGY] + "/" + Game.spawns['Home'].memory.maxStorage)
     }
 
 
@@ -86,7 +86,7 @@ module.exports.loop = function () {
 
     function spawn_controll() {
         var myRooms = ['E41S26', 'E42S26']
-        var mySpawns = ['Home', 'Spawn2']
+        var mySpawns = ['Spawn3', 'Spawn2']
 
         var energy_status = Game.rooms[myRooms[0]].energyAvailable;
 
@@ -240,8 +240,8 @@ module.exports.loop = function () {
                     }
                 if(room.memory.slave_rooms && transporter.length >= 2){
                     slaveTransporter = _.filter(Game.creeps, (c) => (c.memory.role === "transporter" && c.memory.work_room === room.memory.slave_rooms[0]))
-                    if (slaveTransporter.length < 2 || (slaveTransporter.length === 2 && slaveTransporter[0].ticksToLive < 100)) {
-                        Transporter(spawn, energy, room.memory.slave_rooms[0])
+                    if (slaveTransporter.length < 1 || (slaveTransporter.length === 1 && slaveTransporter[0].ticksToLive < 100)) {
+                        Transporter(spawn, maximum_capacity, room.memory.slave_rooms[0])
                     }
                 }
             }
@@ -280,7 +280,8 @@ module.exports.loop = function () {
             //energy_status = Game.rooms[home].energyAvailable;
             maximum_capacity = Game.spawns[spawn].room.energyCapacityAvailable
             energy_status = Game.spawns[spawn].room.energyAvailable;
-            energy = maximum_capacity
+            if(maximum_capacity > 2100 ) energy = 2100
+            else energy = maximum_capacity
             room = Game.spawns[spawn].room
 
             if ((!Game.spawns[spawn].spawning) && energy_status >= energy) {
@@ -363,7 +364,7 @@ module.exports.loop = function () {
         }
 
         function Claimer(spawn, energy, work_room) {
-            var modules = [MOVE, MOVE, CARRY, CARRY, CLAIM]
+            var modules = [MOVE, MOVE, CLAIM]
             var newName = modules.length + '-size Claimer' + Game.time;
             home_room = Game.spawns[spawn].room.name
             console.log('Spawning new claimer: ' + newName);

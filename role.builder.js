@@ -135,7 +135,8 @@ var roleBuilder = {
                     var station = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                             filter: (structure) => {
                                 return (structure.structureType === STRUCTURE_CONTAINER || 
-                                        structure.structureType === STRUCTURE_STORAGE) &&
+                                        structure.structureType === STRUCTURE_STORAGE ||
+                                        structure.structureType === STRUCTURE_TERMINAL) &&
                                         structure.store[RESOURCE_ENERGY] >= creep.carryCapacity/2 &&
                                         structure.id != controllerContainer &&
                                         structure.id != controllerContainer2 &&

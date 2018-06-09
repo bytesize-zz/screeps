@@ -36,4 +36,4 @@ function inTargetRoom(creep){
 }
 
 
-module.exports = module.exports = roleHealer;
+module.exports = roleHealer;

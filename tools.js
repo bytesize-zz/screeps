@@ -44,6 +44,30 @@ module.exports.noEnemys = function(creep){
     return(enemys.length > 0)
 };
 
+module.exports.setAlarm = function(creep){
+    enemys = creep.room.find(FIND_MY_CREEPS);
+
+    if(enemys.length > 0 ){
+        homeRoom = Game.rooms[creep.memory.home_room]
+
+        alarm = createAlarm(creep.room, enemys)
+        //console.log(alarm.toString())
+        //homeRoom.memory.alarm = JSON.stringify(alarm)
+        //console.log(homeRoom.memory)
+        //homeRoom.memory.alarm = JSON.stringify(alarm)
+
+
+    }//else delete
+}
+
+
+function createAlarm(room, enemys){
+    this.room = room.name
+    this.enemys = enemys.length
+
+    return this
+}
+
 module.exports.identifyControllerContainer = function(room_name){
     room = Game.rooms[room_name]
     if(room) {
